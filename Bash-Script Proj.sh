@@ -105,3 +105,81 @@ table_menu() {
   done
 }
 
+create_table() {
+  read -p "Enter table name: " table
+  touch "$table.table" "$table.meta"
+
+  read -p "Enter columns like id:int,name:string: " columns
+  echo "$columns" | tr ',' '\n' > "$table.meta"
+
+  read -p "Enter primary key column name: " pk
+  echo "PK:$pk" >> "$table.meta"
+  echo "Table '$table' created."
+}
+
+list_tables() {
+  echo "Tables:"
+  ls *.table 2>/dev/null | sed 's/.table$//'
+}
+
+drop_table() {
+  read -p "Enter table name to delete: " table
+  rm "$table.table" "$table.meta" 2>/dev/null
+  echo "Table '$table' deleted if it existed."
+}
+
+insert_into_table() {
+  read -p "Enter table name: " table
+  if [ ! -f "$table.table" ]; then
+    echo "Table not found."
+    return
+  fi
+
+  columns=( $(cut -d: -f1 "$table.meta" | grep -v PK) )
+  types=( $(cut -d: -f2 "$table.meta" | grep -v PK) )
+  pk=$(grep PK "$table.meta" | cut -d: -f2)
+  row=""
+
+  for i in ${!columns[@]}
+  do
+    read -p "Enter ${columns[$i]} (${types[$i]}): " value
+
+    if [ "${columns[$i]}" == "$pk" ]; then
+      if grep -q "^$value:" "$table.table"; then
+        echo "Primary key already exists."
+        return
+      fi
+    fi
+
+    row="$row$value:"
+  done
+
+  echo "${row::-1}" >> "$table.table"
+  echo "Row inserted."
+}
+
+select_from_table() {
+  read -p "Enter table name: " table
+  if [ ! -f "$table.table" ]; then
+    echo "Table not found."
+    return
+  fi
+
+  head=$(cut -d: -f1 "$table.meta" | grep -v PK | tr '\n' '\t')
+  echo -e "$head"
+  cat "$table.table" | tr ':' '\t'
+}
+
+delete_from_table() {
+  read -p "Enter table name: " table
+  read -p "Enter primary key value to delete: " value
+  if [ ! -f "$table.table" ]; then
+    echo "Table not found."
+    return
+  fi
+
+  grep -v "^$value:" "$table.table" > temp && mv temp "$table.table"
+  echo "Deleted if existed."
+}
+
+main_menu
