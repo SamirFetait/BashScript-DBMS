@@ -182,4 +182,33 @@ delete_from_table() {
   echo "Deleted if existed."
 }
 
+update_table() {
+read -p "Enter table name: " table
+if [ ! -f "$table.table" ]; then
+echo "Table not found."
+return
+fi
+
+columns=( $(cut -d: -f1 "$table.meta" | grep -v PK) )
+types=( $(cut -d: -f2 "$table.meta" | grep -v PK) )
+pk=$(grep PK "$table.meta" | cut -d: -f2)
+
+read -p "Enter primary key value to update: " value
+found=$(grep "^$value:" "$table.table")
+if [ -z "$found" ]; then
+echo "Record not found."
+return
+fi
+
+new_row=""
+for i in ${!columns[@]}
+do
+read -p "Enter new ${columns[$i]} (${types[$i]}): " new_value
+new_row="$new_row$new_value:"
+done
+
+grep -v "^$value:" "$table.table" > temp && echo "${new_row::-1}" >> temp && mv temp "$table.table"
+echo "Record updated."
+}
+
 main_menu
