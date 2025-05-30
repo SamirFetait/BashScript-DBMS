@@ -1,0 +1,107 @@
+#!/bin/bash
+
+DataBase_Folder="./MyDatabase"
+mkdir -p "$DataBase_Folder"
+
+main_menu() {
+  while true
+  do
+    echo ""
+    echo "Main Menu"
+    echo "1. Create Database"
+    echo "2. List Databases"
+    echo "3. Connect to Database"
+    echo "4. Drop Database"
+    echo "5. Exit"
+    read -p "Choose an option: " choice
+
+    if [ "$choice" == "1" ]; then
+      create_database
+    elif [ "$choice" == "2" ]; then
+      list_databases
+    elif [ "$choice" == "3" ]; then
+      connect_to_database
+    elif [ "$choice" == "4" ]; then
+      drop_database
+    elif [ "$choice" == "5" ]; then
+      echo "Goodbye!"
+      exit
+    else
+      echo "Invalid option. Please try again."
+    fi
+  done
+}
+
+create_database() {
+  read -p "Enter new database name: " db_name
+  mkdir "$DataBase_Folder/$db_name" 2>/dev/null
+  if [ $? -eq 0 ]; then
+    echo "Database '$db_name' created."
+  else
+    echo "Database already exists."
+  fi
+}
+
+list_databases() {
+  echo "Databases:"
+  ls "$DataBase_Folder"
+}
+
+drop_database() {
+  read -p "Enter database name to delete: " db_name
+  rm -r "$DataBase_Folder/$db_name" 2>/dev/null
+  if [ $? -eq 0 ]; then
+    echo "Database '$db_name' deleted."
+  else
+    echo "Database not found."
+  fi
+}
+
+connect_to_database() {
+  read -p "Enter database name to connect: " db_name
+  if [ -d "$DataBase_Folder/$db_name" ]; then
+    cd "$DataBase_Folder/$db_name"
+    table_menu
+    cd - > /dev/null
+  else
+    echo "Database not found."
+  fi
+}
+
+table_menu() {
+  while true
+  do
+    echo ""
+    echo "Table Menu"
+    echo "1. Create Table"
+    echo "2. List Tables"
+    echo "3. Drop Table"
+    echo "4. Insert Into Table"
+    echo "5. Select From Table"
+    echo "6. Delete From Table"
+    echo "7. Update Table"
+    echo "8. Back to Main Menu"
+    read -p "Choose an option: " choice
+
+    if [ "$choice" == "1" ]; then
+      create_table
+    elif [ "$choice" == "2" ]; then
+      list_tables
+    elif [ "$choice" == "3" ]; then
+      drop_table
+    elif [ "$choice" == "4" ]; then
+      insert_into_table
+    elif [ "$choice" == "5" ]; then
+      select_from_table
+    elif [ "$choice" == "6" ]; then
+      delete_from_table
+    elif [ "$choice" == "7" ]; then
+      update_table
+    elif [ "$choice" == "8" ]; then
+      break
+    else
+      echo "Invalid option."
+    fi
+  done
+}
+
